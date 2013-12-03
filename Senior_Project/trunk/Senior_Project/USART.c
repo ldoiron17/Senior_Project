@@ -4,6 +4,7 @@
 #include <stdio.h>
 #include <avr/eeprom.h>
 #include "USART.h"
+//#include "defines.h"
 
 //Define Functions
 void USART_Init( unsigned int ubrr )

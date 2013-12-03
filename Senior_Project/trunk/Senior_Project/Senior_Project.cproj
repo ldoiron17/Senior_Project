@@ -93,6 +93,27 @@
     </ToolchainSettings>
   </PropertyGroup>
   <ItemGroup>
+    <Compile Include="ISR.c">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="defines.h">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="ISR.h">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="Motor.c">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="Motor.h">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="Init.c">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="Init.h">
+      <SubType>compile</SubType>
+    </Compile>
     <Compile Include="main.c">
       <SubType>compile</SubType>
     </Compile>
