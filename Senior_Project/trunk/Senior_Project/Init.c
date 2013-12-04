@@ -94,7 +94,7 @@ void Motor_Initialization( void ){
 	PORTB = 0x00; //initialize PORTB to zero
 	
 	//Startup in a Disabled State
-	//Motor_Disable();
+	Motor_Disable();
 	
 
 	

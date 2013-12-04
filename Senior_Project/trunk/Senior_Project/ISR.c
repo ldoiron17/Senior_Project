@@ -10,6 +10,92 @@
 
 
 
+
+ISR(TIMER1_COMPA_vect) //interrupt service routine for timer1 compare A flag
+{
+	
+	
+
+	if(MOTOR1_X.enabled == YES){
+		
+		//accelerate speed every full step, this is a test
+		if(OCR1A > 180){
+			OCR1A -= 1;
+		}
+		
+		if(MOTOR1_X.dir == POSITIVE){
+			// Full step code
+			if(count == 0){
+				count += 1;
+				PWM1A = ON;
+				PWM1B = OFF;
+				PWM1A_on();
+				PWM1B_off();
+			}else if(count == 1){
+				count += 1;
+				PWM2A = ON;
+				PWM2B = OFF;
+				PWM2A_on();
+				PWM2B_off();
+			}else if(count == 2){
+				count += 1;
+				PWM1A = OFF;
+				PWM1B = ON;
+				PWM1A_off();
+				PWM1B_on();
+			} else{
+				PWM2A = OFF;
+				PWM2B = ON;
+				PWM2A_off();
+				PWM2B_on();
+				count = 0;
+				MOTOR1_X.enabled = NO;
+			}
+		}else if(MOTOR1_X.dir == NEGATIVE){
+			// Full step code
+			if(count == 0){
+				count += 1;
+				PWM1A = ON;
+				PWM1B = OFF;
+				PWM1A_on();
+				PWM1B_off();
+			}else if(count == 1){
+				count += 1;
+				PWM2A = OFF;
+				PWM2B = ON;
+				PWM2A_off();
+				PWM2B_on();
+			}else if(count == 2){
+				count += 1;
+				PWM1A = OFF;
+				PWM1B = ON;
+				PWM1A_off();
+				PWM1B_on();
+			} else{
+				PWM2A = ON;
+				PWM2B = OFF;
+				PWM2A_on();
+				PWM2B_off();
+				count = 0;
+				MOTOR1_X.enabled = NO;
+			}
+		}
+		}else{
+		MOTOR1_X.enabled = NO;
+		motor_step_count = 0;
+		PWM1A_off();
+		PWM1B_off();
+		PWM2A_off();
+		PWM2B_off();
+	}
+	
+
+	
+
+}
+
+/*
+
 ISR(TIMER1_COMPA_vect) //interrupt service routine for timer1 compare A flag
 	{
 	
@@ -181,7 +267,7 @@ ISR(TIMER1_COMPA_vect) //interrupt service routine for timer1 compare A flag
 			iter += 1;
 		}
 */
-	}
+	//}
 
 ISR(TIMER2_COMP_vect) //interrupt service routine for timer1 compare B flag
 	{
@@ -224,7 +310,7 @@ ISR(ADC_vect)
 		//ADC_avg = (3*ADCval)/4 + ADCval1/4;
 		ADC_avg = ADC;
 		
-		if(move_motor == YES){
+		if(MOTOR1_X.enabled == YES){
 			if(ADMUX == 0b11000010){
 /*else if ( (ADC_avg > 180) & (ADC_avg<200) ){
 					if(state1 == POS_CUR){
@@ -324,3 +410,10 @@ ISR(ADC_vect)
 		
 		
 }
+
+
+
+/************************************************************Chuck Testa**********************************/
+
+
+

@@ -9,60 +9,19 @@
 #include "defines.h"
 
 
-volatile signed int Axis1_x_coord=0;
-volatile signed int  Axis1_y_coord=0;
-volatile signed int  Axis2_x_coord=0;
-volatile signed int  Axis2_y_coord=0;
-volatile signed int  Axis3_x_coord=0;
-volatile signed int  Axis3_y_coord=0;
-volatile signed int  Axis1_x_coord_old=0;
-volatile signed int  Axis1_y_coord_old=0;
-volatile int  Controller_state = 1;
-volatile int  Coordinates_updated = 0;
-volatile int  Coordinates_verified = 0;
-volatile int  Receiving_Coords = 0;
-volatile int  Coordinates_correct = 0;
-volatile int  parsed_coord=0;
-volatile int  state1_hysterisis_delay = 0;
-volatile int  state2_hysterisis_delay = 0;
-volatile int  PWM1A = 0;
-volatile int  PWM1B = 0;
-volatile int  PWM2A = 0;
-volatile int  PWM2B = 0;
-volatile char  buffer[10];       //Used to Store ADC value readings from itoa() of ADC register
-volatile char  *clr_screen = "^\033[2J\033[0;0H";
-volatile char  *Init_statement = "^\033[2J\033[0;0HWelcome to Crazy Numerical Control 3000\r\nWhere All Of Your Dreams Will Come True\r\n.......................................\r\n\r\n\r\n";
-volatile char  *Coord_request_x = "Please Input The Desired X Coordinate:";
-volatile char  *Coord_request_y = "Please Input The Desired Y Coordinate:";
-volatile char  *Verify_coords1 = "You input the Coordinates (";
-volatile char  *Verify_coords2 = ",";
-volatile char  *Verify_coords3 = "). Is this correct? (Y/N)";
-volatile char  *Verify_coords4 = "Moving To Desired Coordinates...";
-volatile char  *Verify_coords5 = "Please Renter Coordinates:";
-volatile char  *newline = "\r\n";
-volatile char  *clearline = "\r";
-extern volatile int motor_movement_distance=0;
-volatile int motor_dir = POSITIVE;
-volatile int motor_moving = NO;
-volatile int  move_motor = NO;
-volatile int motor_step_count = 0;
-volatile int ADC_count = 0;
-volatile int count = 0;
-volatile int iter = 0;
-volatile int state1 = POS_CUR;
-volatile int state2 = POS_CUR;
-volatile char data;
-volatile uint16_t ADCval=0;
-volatile uint16_t ADCval1=0;
-volatile uint16_t ADCval2=0;
-volatile uint16_t ADCval3=0;
-volatile uint16_t ADCval4=0;
-volatile uint16_t ADC_avg=0;
-volatile uint8_t  SRAMchar;
-volatile uint16_t SRAMint;
-volatile uint8_t  SRAMstring[10];
-volatile char mydatabuffer[11][10];
 
+//MOTOR_T *MOTOR_struct_init(void){
+	//
+	////Initialize space for the struct
+	//MOTOR_T *s = (MOTOR_T * *) calloc(1,sizeof(MOTOR_T *));
+	//
+	//s->current_position = 0;
+	//s->dir = POSITIVE;
+	//s->enabled = NO;
+	//s->step_size = FULLSTEP;
+	//
+	//return s;
+//}
 
 void Motor_Disable (void){
 	
@@ -193,4 +152,16 @@ void Receive_Coords( void ){
 	
 	Receiving_Coords = NO;
 	
+}
+
+void stepx(int dir, int STEPSIZE){
+	MOTOR1_X.dir = dir;
+	MOTOR1_X.enabled = YES;
+	MOTOR1_X.step_size = STEPSIZE;
+}
+
+void stepy(int dir, int STEPSIZE){
+	MOTOR2_Y.dir = dir;
+	MOTOR2_Y.enabled = YES;
+	MOTOR2_Y.step_size = STEPSIZE;
 }

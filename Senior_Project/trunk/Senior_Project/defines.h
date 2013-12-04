@@ -1,37 +1,38 @@
 
 
+
 extern volatile signed int Axis1_x_coord;
-extern volatile signed int  Axis1_y_coord;
-extern volatile signed int  Axis2_x_coord;
-extern volatile signed int  Axis2_y_coord;
-extern volatile signed int  Axis3_x_coord;
-extern volatile signed int  Axis3_y_coord;
-extern volatile signed int  Axis1_x_coord_old;
-extern volatile signed int  Axis1_y_coord_old;
-extern volatile int  Controller_state;
-extern volatile int  Coordinates_updated;
-extern volatile int  Coordinates_verified;
-extern volatile int  Receiving_Coords;
-extern volatile int  Coordinates_correct;
-extern volatile int  parsed_coord;
-extern volatile int  state1_hysterisis_delay;
-extern volatile int  state2_hysterisis_delay;
-extern volatile int  PWM1A;
-extern volatile int  PWM1B;
-extern volatile int  PWM2A;
-extern volatile int  PWM2B;
-extern volatile char  buffer[10];       //Used to Store ADC value readings from itoa() of ADC register
-extern volatile char  *clr_screen;
-extern volatile char  *Init_statement;
-extern volatile char  *Coord_request_x;
-extern volatile char  *Coord_request_y;
-extern volatile char  *Verify_coords1;
-extern volatile char  *Verify_coords2;
-extern volatile char  *Verify_coords3;
-extern volatile char  *Verify_coords4;
-extern volatile char  *Verify_coords5;
-extern volatile char  *newline;
-extern volatile char  *clearline;
+extern volatile signed int Axis1_y_coord;
+extern volatile signed int Axis2_x_coord;
+extern volatile signed int Axis2_y_coord;
+extern volatile signed int Axis3_x_coord;
+extern volatile signed int Axis3_y_coord;
+extern volatile signed int Axis1_x_coord_old;
+extern volatile signed int Axis1_y_coord_old;
+extern volatile int Controller_state;
+extern volatile int Coordinates_updated;
+extern volatile int Coordinates_verified;
+extern volatile int Receiving_Coords;
+extern volatile int Coordinates_correct;
+extern volatile int parsed_coord;
+extern volatile int state1_hysterisis_delay;
+extern volatile int state2_hysterisis_delay;
+extern volatile int PWM1A;
+extern volatile int PWM1B;
+extern volatile int PWM2A;
+extern volatile int PWM2B;
+extern volatile char buffer[10];       //Used to Store ADC value readings from itoa() of ADC register
+extern volatile char *clr_screen;
+extern volatile char *Init_statement;
+extern volatile char *Coord_request_x;
+extern volatile char *Coord_request_y;
+extern volatile char *Verify_coords1;
+extern volatile char *Verify_coords2;
+extern volatile char *Verify_coords3;
+extern volatile char *Verify_coords4;
+extern volatile char *Verify_coords5;
+extern volatile char *newline;
+extern volatile char *clearline;
 extern volatile int motor_movement_distance;
 extern volatile int motor_dir;
 extern volatile int motor_moving;
@@ -50,11 +51,32 @@ extern volatile uint16_t ADCval3;
 extern volatile uint16_t ADCval4;
 extern volatile uint16_t ADC_avg;
 extern volatile uint8_t  SRAMchar;
+extern volatile float SRAMfloat;
 extern volatile uint16_t SRAMint;
 extern volatile uint8_t  SRAMstring[10];
 extern volatile char mydatabuffer[11][10];
+extern volatile float EEMEM x_coord_data[ 629 ];
+extern volatile float EEMEM y_coord_data[ 629 ];
+
+struct MOTOR_T{
+	int dir;
+	int current_position;
+	int enabled;
+	int step_size;
+};
+
+extern struct MOTOR_T MOTOR1_X;
+extern struct MOTOR_T MOTOR2_Y;
+extern struct MOTOR_T MOTOR3_Z;
+
 
 //Define constants
+#define X_AXIS 0
+#define Y_AXIS 1
+#define Z_AXIS 2
+#define FULLSTEP 0
+#define HALFSTEP 1
+#define QUARTERSTEP 2
 #define POSITIVE 1
 #define NEGATIVE 0
 #define ON 1
@@ -76,7 +98,7 @@ extern volatile char mydatabuffer[11][10];
 //LED functions for turning on and off status LED 1
 #define LED1_on()  PORTD |= _BV(6)
 #define LED1_off()  PORTD &= ~_BV(6)
-#define led1_toggle() PORTD ^= _BV(6);
+#define led1_toggle() PORTD ^= _BV(6)
 
 //LED functions for turning on and off status LED 2
 #define LED2_on()  PORTD |= _BV(4)
