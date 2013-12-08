@@ -22,10 +22,13 @@ extern volatile int PWM1B;
 extern volatile int PWM2A;
 extern volatile int PWM2B;
 extern volatile char buffer[10];       //Used to Store ADC value readings from itoa() of ADC register
+extern volatile char Gcode_buffer[3];
 extern volatile char *clr_screen;
 extern volatile char *Init_statement;
+extern volatile char *ding;
 extern volatile char *Coord_request_x;
 extern volatile char *Coord_request_y;
+extern volatile char *Gcode_request;
 extern volatile char *Verify_coords1;
 extern volatile char *Verify_coords2;
 extern volatile char *Verify_coords3;
@@ -63,6 +66,7 @@ struct MOTOR_T{
 	int current_position;
 	int enabled;
 	int step_size;
+	int current_state;
 };
 
 extern struct MOTOR_T MOTOR1_X;
@@ -71,6 +75,14 @@ extern struct MOTOR_T MOTOR3_Z;
 
 
 //Define constants
+#define STATE0 0
+#define STATE1 1
+#define STATE2 2
+#define STATE3 3
+#define STATE4 4
+#define STATE5 5
+#define STATE6 6
+#define STATE7 7
 #define X_AXIS 0
 #define Y_AXIS 1
 #define Z_AXIS 2
@@ -94,6 +106,8 @@ extern struct MOTOR_T MOTOR3_Z;
 #define UPDATED 1
 #define BAUD 9600
 #define MYUBRR F_CPU/16/BAUD-1
+#define FALSE = 1;
+#define TRUE = 2;
 
 //LED functions for turning on and off status LED 1
 #define LED1_on()  PORTD |= _BV(6)

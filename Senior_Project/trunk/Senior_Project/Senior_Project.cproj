@@ -127,10 +127,10 @@
     <Compile Include="main.c">
       <SubType>compile</SubType>
     </Compile>
-    <Compile Include="USART.c">
+    <Compile Include="Communication.c">
       <SubType>compile</SubType>
     </Compile>
-    <Compile Include="USART.h">
+    <Compile Include="Communication.h">
       <SubType>compile</SubType>
     </Compile>
   </ItemGroup>

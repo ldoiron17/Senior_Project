@@ -58,110 +58,24 @@ void Motor_Enable (void){
 
 
 
-void Receive_Coords( void ){
-	
-	unsigned char tmp;
-	//Ask for input Coordinate X
-	Receiving_Coords = YES;
-	Coordinates_updated = NOT_UPDATED;
-	USART_putstring(Coord_request_x); 
-	USART_putstring(newline);
-	while( Coordinates_updated == NOT_UPDATED ){
-		
-		
-		tmp = USART_Receive();
-		//USART_Transmit(tmp);
-		
-		//LED1_off();
-		if(Receiving_Coords == YES){
-				
-
-		if(Coordinates_updated == NOT_UPDATED){
-			parsed_coord = atoi(&tmp);
-			
-			Coordinates_updated = UPDATED;
-		}
-				
-		/*if(Coordinates_verified == UNVERIFIED){
-			if( tmp == 'Y' | tmp == 'y'){
-				Coordinates_correct = YES;
-				} else{
-				Coordinates_correct = NO;
-				}	
-			}
-			*/	
-				
-		}
-	}
-	Axis1_x_coord = parsed_coord;
-	
-	//Ask for input Coordinate Y
-	USART_putstring(Coord_request_y); 
-	USART_putstring(newline);
-	Coordinates_updated = NOT_UPDATED;
-	while( Coordinates_updated == NOT_UPDATED ){
-		
-		tmp = USART_Receive();
-		//USART_Transmit(tmp);
-		if(Receiving_Coords == YES){
-			
-
-			if(Coordinates_updated == NOT_UPDATED){
-				parsed_coord = atoi(&tmp);
-				Coordinates_updated = UPDATED;
-			}
-			
-			/*if(Coordinates_verified == UNVERIFIED){
-				if( tmp == 'Y' | tmp == 'y'){
-					Coordinates_correct = YES;
-					} else{
-					Coordinates_correct = NO;
-				}
-			}
-			*/
-			
-		}
-	}
-	Axis1_y_coord = parsed_coord;
-	
-	//Verify that the input coordinates are correct
-	Coordinates_verified = UNVERIFIED;
-	Coordinates_correct = NO;
-	USART_putstring(Verify_coords1);
-	itoa(Axis1_x_coord, buffer, 10);
-	USART_putstring(buffer);
-	USART_putstring(Verify_coords2);
-	itoa(Axis1_y_coord, buffer, 10);
-	USART_putstring(buffer);
-	USART_putstring(Verify_coords3);
-	USART_putstring(newline);
-	while( Coordinates_verified == UNVERIFIED ){
-		
-		tmp = USART_Receive();
-		//USART_Transmit(tmp);
-		//LED1_off();
-		if(tmp == 'y'){
-			Coordinates_correct = YES;
-			Coordinates_verified = VERIFIED;
-		}else{
-			Receive_Coords();
-		}
-		//USART_putstring(clearline);
-
-	}
-	
-	Receiving_Coords = NO;
-	
-}
-
 void stepx(int dir, int STEPSIZE){
 	MOTOR1_X.dir = dir;
 	MOTOR1_X.enabled = YES;
 	MOTOR1_X.step_size = STEPSIZE;
+	if( (STEPSIZE == FULLSTEP) & (MOTOR1_X.current_state != STATE3)){
+		MOTOR1_X.current_state += 1; //increment through stepper motor state table
+	}else{
+		MOTOR1_X.current_state =0; //go back to beginning of table
+	}
 }
 
 void stepy(int dir, int STEPSIZE){
 	MOTOR2_Y.dir = dir;
 	MOTOR2_Y.enabled = YES;
 	MOTOR2_Y.step_size = STEPSIZE;
+	if( (STEPSIZE == FULLSTEP) & (MOTOR2_Y.current_state != STATE3)){
+		MOTOR2_Y.current_state += 1; //increment through stepper motor state table
+	}else{
+		MOTOR2_Y.current_state =0; //go back to beginning of table
+	}
 }

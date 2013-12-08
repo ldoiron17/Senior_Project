@@ -19,80 +19,129 @@ ISR(TIMER1_COMPA_vect) //interrupt service routine for timer1 compare A flag
 	if(MOTOR1_X.enabled == YES){
 		
 		//accelerate speed every full step, this is a test
-		if(OCR1A > 180){
+		if(OCR1A > 140){
 			OCR1A -= 1;
 		}
 		
-		if(MOTOR1_X.dir == POSITIVE){
-			// Full step code
-			if(count == 0){
-				count += 1;
-				PWM1A = ON;
-				PWM1B = OFF;
-				PWM1A_on();
-				PWM1B_off();
-			}else if(count == 1){
-				count += 1;
-				PWM2A = ON;
-				PWM2B = OFF;
-				PWM2A_on();
-				PWM2B_off();
-			}else if(count == 2){
-				count += 1;
-				PWM1A = OFF;
-				PWM1B = ON;
-				PWM1A_off();
-				PWM1B_on();
-			} else{
-				PWM2A = OFF;
-				PWM2B = ON;
-				PWM2A_off();
-				PWM2B_on();
-				count = 0;
-				MOTOR1_X.enabled = NO;
+		if(MOTOR1_X.step_size == FULLSTEP){
+			if(MOTOR1_X.dir == POSITIVE){
+				
+				
+				switch(MOTOR1_X.current_state){
+					
+					case STATE0:
+						PWM1A = ON;
+						PWM1B = OFF;
+						PWM1A_on();
+						PWM1B_off();
+						PWM2A = ON;
+						PWM2B = OFF;
+						PWM2A_on();
+						PWM2B_off();
+						break;
+					case STATE1:
+						PWM2A = OFF;
+						PWM2B = ON;
+						PWM2A_off();
+						PWM2B_on();
+						break;
+					case STATE2:
+						PWM1A = OFF;
+						PWM1B = ON;
+						PWM1A_off();
+						PWM1B_on();
+						break;
+					case STATE3:
+						PWM2A = ON;
+						PWM2B = OFF;
+						PWM2A_on();
+						PWM2B_off();
+						break;
+					default:
+						MOTOR1_X.enabled = NO;
+						MOTOR1_X.current_state = STATE0;
+						break;
+				}
+					
+				}
+				//// Full step code
+				//if(count == 0){
+					//count += 1;
+					//PWM1A = ON;
+					//PWM1B = OFF;
+					//PWM1A_on();
+					//PWM1B_off();
+					//PWM2A = ON;
+					//PWM2B = OFF;
+					//PWM2A_on();
+					//PWM2B_off();
+				//}else if(count == 1){
+					//count += 1;
+					//PWM2A = OFF;
+					//PWM2B = ON;
+					//PWM2A_off();
+					//PWM2B_on();
+				//}else if(count == 2){
+					//count += 1;
+					//PWM1A = OFF;
+					//PWM1B = ON;
+					//PWM1A_off();
+					//PWM1B_on();
+				//} else{
+					//PWM2A = ON;
+					//PWM2B = OFF;
+					//PWM2A_on();
+					//PWM2B_off();
+					//count = 0;
+					//MOTOR1_X.enabled = NO;
+				//}
+			//}else if(MOTOR1_X.dir == NEGATIVE){
+				//// Full step code
+				//if(count == 0){
+					//count += 1;
+					//PWM1A = ON;
+					//PWM1B = OFF;
+					//PWM1A_on();
+					//PWM1B_off();
+					//PWM2A = ON;
+					//PWM2B = OFF;
+					//PWM2A_on();
+					//PWM2B_off();
+				//}else if(count == 1){
+					//count += 1;
+					//PWM2A = OFF;
+					//PWM2B = ON;
+					//PWM2A_off();
+					//PWM2B_on();
+				//}else if(count == 2){
+					//count += 1;
+					//PWM1A = OFF;
+					//PWM1B = ON;
+					//PWM1A_off();
+					//PWM1B_on();
+				//} else{
+					//PWM2A = ON;
+					//PWM2B = OFF;
+					//PWM2A_on();
+					//PWM2B_off();
+					//count = 0;
+					//MOTOR1_X.enabled = NO;
+				//}
+			//}
 			}
-		}else if(MOTOR1_X.dir == NEGATIVE){
-			// Full step code
-			if(count == 0){
-				count += 1;
-				PWM1A = ON;
-				PWM1B = OFF;
-				PWM1A_on();
-				PWM1B_off();
-			}else if(count == 1){
-				count += 1;
-				PWM2A = OFF;
-				PWM2B = ON;
-				PWM2A_off();
-				PWM2B_on();
-			}else if(count == 2){
-				count += 1;
-				PWM1A = OFF;
-				PWM1B = ON;
-				PWM1A_off();
-				PWM1B_on();
-			} else{
-				PWM2A = ON;
-				PWM2B = OFF;
-				PWM2A_on();
-				PWM2B_off();
-				count = 0;
-				MOTOR1_X.enabled = NO;
-			}
-		}
 		}else{
-		MOTOR1_X.enabled = NO;
-		motor_step_count = 0;
-		PWM1A_off();
-		PWM1B_off();
-		PWM2A_off();
-		PWM2B_off();
+			MOTOR1_X.enabled = NO;
+			motor_step_count = 0;
+			PWM1A_off();
+			PWM1B_off();
+			PWM2A_off();
+			PWM2B_off();
+			PWM1A = OFF;
+			PWM1B = OFF;
+			PWM2A = OFF;
+			PWM2B = OFF;
+		}
 	}
-	
-
-	
-
-}
 
 /*
 
@@ -382,7 +431,7 @@ ISR(ADC_vect)
 						if( PWM2A == ON){
 							PWM2A_on();
 							PWM2B_off();
-							}else if ( PWM2B == ON){
+						}else if ( PWM2B == ON){
 							PWM2B_on();
 							PWM2A_off();
 						}

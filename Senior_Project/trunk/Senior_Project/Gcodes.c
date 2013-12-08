@@ -12,6 +12,7 @@
 //Absolute Line Movements G-code Command
 //Implemented using Bresenham's line algorithm
 //Typically used for drawing lines screens and calculating pixel color.
+//Input coordinates are in MILS (0.001 inches = 1 MIL)
 void G00(int x, int y, int feedrate){
 	
 	
@@ -19,8 +20,8 @@ void G00(int x, int y, int feedrate){
 	
 	int dx = x - MOTOR1_X.current_position;
 	int dy = y - MOTOR2_Y.current_position;
-	int dirx=dx>0?1:-1;
-	int diry=dy>0?1:-1;
+	int dirx=dx>0?POSITIVE:NEGATIVE;
+	int diry=dy>0?POSITIVE:NEGATIVE;
 	dx = abs(dx);
 	dy = abs(dy);
 	
