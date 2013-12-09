@@ -8,6 +8,7 @@
 #include <avr/eeprom.h>
 #include "defines.h"
 #include "Motor.h"
+#include "Gcodes.h"
 
 //Absolute Line Movements G-code Command
 //Implemented using Bresenham's line algorithm
@@ -15,8 +16,8 @@
 //Input coordinates are in MILS (0.001 inches = 1 MIL)
 void G00(int x, int y, int feedrate){
 	
-	
-	//set_feedrate(feedrate);
+	//need to implement feedrate control still!
+	//set_feedrate(feedrate); 
 	
 	int dx = x - MOTOR1_X.current_position;
 	int dy = y - MOTOR2_Y.current_position;

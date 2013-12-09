@@ -7,7 +7,8 @@ typedef struct {
 	char ydata[7];
 	char zdata[7];
 	char feedrate[7];
-	char* exit_message, xmessage, ymessage, zmessage, fmessage;
+	char* exit_message, *xmessage, *ymessage, *zmessage, *fmessage;
+	int final_data[4];
 } var_check_T ;
 
 
@@ -34,6 +35,10 @@ char clear_whitespace( void );
 void scan_var( var_check_T * );
 
 void check_format(var_check_T* s);
+
+void verify_coords(var_check_T* s);
+
+int convert_coord(char s[]);
 
 int is_ascii_num(char var);
 

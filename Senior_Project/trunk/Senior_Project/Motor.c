@@ -46,7 +46,6 @@ void Motor_Enable (void){
 	
 	//Set Global Motors Disable Flag
 	Controller_state = ENABLED;
-	
 	DIS1_off();
 	DIS2_off();
 	//DIS3_off();

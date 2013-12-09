@@ -93,6 +93,10 @@ void Motor_Initialization( void ){
 	DDRB  = 0b11110100; //set OC1A and OC1B to outputs for use with PWM
 	PORTB = 0x00; //initialize PORTB to zero
 	
+	//set limits to the axes of the CNC table
+	MOTOR1_X.limit = 12000; //12000 MILS = 12 inches
+	MOTOR2_Y.limit = 18000; //18000 MILS = 18 inches
+	MOTOR3_Z.limit = 3000; //3000 MILS = 3 inches
 	//Startup in a Disabled State
 	Motor_Disable();
 	

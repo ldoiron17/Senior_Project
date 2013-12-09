@@ -57,9 +57,9 @@ extern volatile uint8_t  SRAMchar;
 extern volatile float SRAMfloat;
 extern volatile uint16_t SRAMint;
 extern volatile uint8_t  SRAMstring[10];
-extern volatile char mydatabuffer[11][10];
-extern volatile float EEMEM x_coord_data[ 629 ];
-extern volatile float EEMEM y_coord_data[ 629 ];
+//extern volatile char mydatabuffer[11][10];
+//extern volatile float EEMEM x_coord_data[ 629 ];
+//extern volatile float EEMEM y_coord_data[ 629 ];
 
 struct MOTOR_T{
 	int dir;
@@ -67,6 +67,7 @@ struct MOTOR_T{
 	int enabled;
 	int step_size;
 	int current_state;
+	int limit;
 };
 
 extern struct MOTOR_T MOTOR1_X;

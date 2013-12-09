@@ -212,7 +212,7 @@ void Receive_Gcode( void ){
 		USART_Transmit(Gcode_buffer[i]);
 	}
 		
-	if( strcmp(&Gcode_buffer, "G01") == 0){  //If input is G01 command
+	if( strcmp(&Gcode_buffer, "G00") == 0){  //If input is G01 command
 		
 
 		scan_var(s); //Read input coordinates
@@ -221,28 +221,38 @@ void Receive_Gcode( void ){
 			USART_putstring(ding);
 			USART_putstring(s->exit_message);
 			USART_putstring(newline);
-		}else{
-			check_format(s); // Make sure coordinates are in correct format and within bounds of machine size
+		}else{ //if input was "error free" (syntax on numbers hasn't been checked yet)
+			check_format(s); // Make sure coordinates are in correct format
 			if(s->format == 0){ //If there was user error in the input
 				USART_putstring(newline);
 				USART_putstring(ding);
 				USART_putstring(s->exit_message);
 				USART_putstring(newline);
-			}else{
-				USART_putstring(newline);
-				USART_putstring("Moving to (");
-				USART_putstring(s->xdata);
-				USART_putstring(", ");
-				USART_putstring(s->ydata);
-				USART_putstring(", ");
-				USART_putstring(s->zdata);
-				USART_putstring(") at a feedrate of ");
-				USART_putstring(s->feedrate);
-				USART_putstring(" IPM..");
-				USART_putstring(newline);
+			}else{ 
+				
+				verify_coords(s);// Check to see if the inputs are within bounds of machine size
+				if(s->format == 0){ //If there was user error in the input
+					USART_putstring(newline);
+					USART_putstring(ding);
+					USART_putstring(s->exit_message);
+					USART_putstring(newline);
+				}else{
+					USART_putstring(newline);
+					USART_putstring("Moving to (");
+					USART_putstring(s->xdata);
+					USART_putstring(", ");
+					USART_putstring(s->ydata);
+					USART_putstring(", ");
+					USART_putstring(s->zdata);
+					USART_putstring(") at a feedrate of ");
+					USART_putstring(s->feedrate);
+					USART_putstring(" IPM..");
+					USART_putstring(newline);
+					//Call Gcode command to move motors (hard coded for now)
+					G00(s->final_data[0], s->final_data[1], s->final_data[3]);
+				}
 			}
 		}
-		
 		
 	}else{
 		USART_putstring(newline);
@@ -300,7 +310,7 @@ void scan_var(var_check_T* s){
 		}
 		
 		if(buf == 3 ){  // 3 = CTRL-C
-			s->exit_message = "NOPE\r\n~Chuck Testa~";
+			s->exit_message = "NOPE\r\n~Chuck Testa~";  //me so funny
 		}
 		
 		else if(buf == ' '){
@@ -325,7 +335,6 @@ void scan_var(var_check_T* s){
 				if(s->current_input == 'x'){
 					if((is_ascii_num(buf) == 1) | (buf == '.')){
 						if(i == 6){
-							s->xmessage = "Truncated";
 							s->current_input = '0';
 						}else{
 							s->xdata[i] = buf;
@@ -337,7 +346,6 @@ void scan_var(var_check_T* s){
 				}else if(s->current_input == 'y'){
 					if((is_ascii_num(buf) == 1) | (buf == '.')){
 						if(i == 6){
-							s->ymessage = "Truncated";
 							s->current_input = '0';
 						}else{
 							s->ydata[i] = buf;
@@ -350,7 +358,6 @@ void scan_var(var_check_T* s){
 				}else if(s->current_input == 'z'){
 					if((is_ascii_num(buf) == 1) | (buf == '.')){
 						if(i == 6){
-							s->ymessage = "Truncated";
 							s->current_input = '0';
 						}else{
 							s->zdata[i] = buf;
@@ -363,7 +370,6 @@ void scan_var(var_check_T* s){
 				}else if(s->current_input == 'f'){
 				if((is_ascii_num(buf) == 1) | (buf == '.')){
 					if(i == 6){
-						s->fmessage = "Truncated";
 						s->current_input = '0';
 					}else{
 						s->feedrate[i] = buf;
@@ -397,71 +403,186 @@ void check_format(var_check_T* s){
 	
 	int i;
 	s->format = 0;// incorrect format
-	int b;
+	char tmp;
 
-	if((s->xdata[0] == '.') & (is_ascii_num(s->xdata[1]) == 1)){
-			
-		 if((is_ascii_num(s->xdata[2]) == 1) & (is_ascii_num(s->xdata[3]) == 1) & ((is_ascii_num(s->xdata[4]) == 1) | s->xdata[4] == 0) & ((is_ascii_num(s->xdata[5]) == 1) | s->xdata[5] == 0) ){
-			s->xdata[5] = s->xdata[3];
-			s->xdata[4] = s->xdata[2];
-			s->xdata[3] = s->xdata[1];
-			s->xdata[2] = '.';
-			s->xdata[1] = '0';
-			s->xdata[0] = '0';
-			s->format = 1;//Correct format		
-		 }
-	}else if( (is_ascii_num(s->xdata[0]) == 1) & (s->xdata[1] == '.') ){
-		if((is_ascii_num(s->xdata[2]) == 1) & ((is_ascii_num(s->xdata[3]) == 1) | s->xdata[3] == 0) & ((is_ascii_num(s->xdata[4]) == 1) | s->xdata[4] == 0) & ((is_ascii_num(s->xdata[5]) == 1) | s->xdata[5] == 0) ){
-			s->xdata[5] = s->xdata[4];
-			s->xdata[4] = s->xdata[3];
-			s->xdata[3] = s->xdata[2];
-			s->xdata[2] = '.';
-			s->xdata[1] = s->xdata[0];
-			s->xdata[0] = '0';
-			s->format = 1;//Correct format
-		}
-			 
-	}else if( (is_ascii_num(s->xdata[0]) == 1) & (is_ascii_num(s->xdata[1]) == 1) & (s->xdata[2] == '.') & ( (is_ascii_num(s->xdata[3]) == 1) | s->xdata[3] == 0) & ( (is_ascii_num(s->xdata[4]) == 1) | s->xdata[4] == 0) & ( (is_ascii_num(s->xdata[5]) == 1) | s->xdata[5] == 0) ){
-		s->format = 1;//Correct format
-	}else if( (is_ascii_num(s->xdata[0]) == 1) & (is_ascii_num(s->xdata[1]) == 1) & (s->xdata[2] == 0) & (s->xdata[3] == 0) & (s->xdata[4] == 0) & (s->xdata[5] == 0)){
+	//x variable check
+	if((s->xdata[0] == '.') & (is_ascii_num(s->xdata[1]) == 1) & (is_ascii_num(s->xdata[2]) == 1 | s->xdata[2] == 0) & (is_ascii_num(s->xdata[3]) == 1 | s->xdata[3] == 0) & ((is_ascii_num(s->xdata[4]) == 1) | s->xdata[4] == 0) & ((is_ascii_num(s->xdata[5]) == 1) | s->xdata[5] == 0) ){
+		s->xdata[5] = (s->xdata[3] == 0) ?'0':s->xdata[3];
+		s->xdata[4] = (s->xdata[2] == 0) ?'0':s->xdata[2];
+		s->xdata[3] = (s->xdata[1] == 0) ?'0':s->xdata[1];
 		s->xdata[2] = '.';
-		s->xdata[3] = '0';
-		s->xdata[4] = '0';
-		s->xdata[5] = '0';
-		s->format = 1;//Correct format
-	}else if( (is_ascii_num(s->xdata[0]) == 1) & (s->xdata[1] == 0) & (s->xdata[2] == 0) & (s->xdata[3] == 0) & (s->xdata[4] == 0) & (s->xdata[5] == 0)){
+		s->xdata[1] = '0';
+		s->xdata[0] = '0';
+		s->format = 1;//Correct format		
+	}else if( (is_ascii_num(s->xdata[0]) == 1) & (s->xdata[1] == '.') & (is_ascii_num(s->xdata[2]) == 1) & ((is_ascii_num(s->xdata[3]) == 1) | s->xdata[3] == 0) & ((is_ascii_num(s->xdata[4]) == 1) | s->xdata[4] == 0) & ((is_ascii_num(s->xdata[5]) == 1) | s->xdata[5] == 0) ){
+		s->xdata[5] = (s->xdata[4] == 0) ?'0':s->xdata[4];
+		s->xdata[4] = (s->xdata[3] == 0) ?'0':s->xdata[3];
+		s->xdata[3] = (s->xdata[2] == 0) ?'0':s->xdata[2];
+		s->xdata[2] = '.';
 		s->xdata[1] = s->xdata[0];
 		s->xdata[0] = '0';
+		s->format = 1;//Correct format	 
+	}else if( (is_ascii_num(s->xdata[0]) == 1) & (is_ascii_num(s->xdata[1]) == 1) & (s->xdata[2] == '.') & ( (is_ascii_num(s->xdata[3]) == 1) | s->xdata[3] == 0) & ( (is_ascii_num(s->xdata[4]) == 1) | s->xdata[4] == 0) & ( (is_ascii_num(s->xdata[5]) == 1) | s->xdata[5] == 0) ){
+		s->format = 1;//Correct format
+	}else if( (is_ascii_num(s->xdata[0]) == 1) & (is_ascii_num(s->xdata[1]) == 1 |  (s->xdata[1] == 0)) & (s->xdata[2] == 0) & (s->xdata[3] == 0) & (s->xdata[4] == 0) & (s->xdata[5] == 0)){
+		tmp = s->xdata[0];
+		s->xdata[0] = (s->xdata[1] == 0) ?'0':s->xdata[0];
+		s->xdata[1] = (s->xdata[1] == 0) ?tmp:s->xdata[1];
 		s->xdata[2] = '.';
 		s->xdata[3] = '0';
 		s->xdata[4] = '0';
 		s->xdata[5] = '0';
 		s->format = 1;//Correct format
+	}else if((s->xdata[0] == 0) & (s->xdata[1] == 0) & (s->xdata[2] == 0) & (s->xdata[3] == 0) & (s->xdata[4] == 0) & (s->xdata[5] == 0)){
+		s->xmessage = "SAME"; //if input wasn't specified, then it is to stay the same
+		s->format = 1;//Correct format
 	}else{
-	s->exit_message = "X coordinate is not in the correct format, please input coordinates as XX.xxx \r\nWhere XX is the integer portion and xxx is the decimal portion.\r\nNote the precision is limited to 1 MIL and extra decimals will be truncated.";
+		s->exit_message = "X coordinate is not in the correct format, please input coordinates as XX.xxx \r\nWhere XX is the integer portion and xxx is the decimal portion.\r\nNote the precision is limited to 1 MIL and extra decimals will be truncated.";
+	}
+	//y variable check
+	if((s->ydata[0] == '.') & (is_ascii_num(s->ydata[1]) == 1) & (is_ascii_num(s->ydata[2]) == 1 | s->ydata[2] == 0) & (is_ascii_num(s->ydata[3]) == 1 | s->ydata[3] == 0) & ((is_ascii_num(s->ydata[4]) == 1) | s->ydata[4] == 0) & ((is_ascii_num(s->ydata[5]) == 1) | s->ydata[5] == 0) ){
+		s->ydata[5] = (s->ydata[3] == 0) ?'0':s->ydata[3];
+		s->ydata[4] = (s->ydata[2] == 0) ?'0':s->ydata[2];
+		s->ydata[3] = (s->ydata[1] == 0) ?'0':s->ydata[1];
+		s->ydata[2] = '.';
+		s->ydata[1] = '0';
+		s->ydata[0] = '0';
+		s->format = 1;//Correct format
+	}else if( (is_ascii_num(s->ydata[0]) == 1) & (s->ydata[1] == '.') & (is_ascii_num(s->ydata[2]) == 1) & ((is_ascii_num(s->ydata[3]) == 1) | s->ydata[3] == 0) & ((is_ascii_num(s->ydata[4]) == 1) | s->ydata[4] == 0) & ((is_ascii_num(s->ydata[5]) == 1) | s->ydata[5] == 0) ){
+		s->ydata[5] = (s->ydata[4] == 0) ?'0':s->ydata[4];
+		s->ydata[4] = (s->ydata[3] == 0) ?'0':s->ydata[3];
+		s->ydata[3] = (s->ydata[2] == 0) ?'0':s->ydata[2];
+		s->ydata[2] = '.';
+		s->ydata[1] = s->ydata[0];
+		s->ydata[0] = '0';
+		s->format = 1;//Correct format
+	}else if( (is_ascii_num(s->ydata[0]) == 1) & (is_ascii_num(s->ydata[1]) == 1) & (s->ydata[2] == '.') & ( (is_ascii_num(s->ydata[3]) == 1) | s->ydata[3] == 0) & ( (is_ascii_num(s->ydata[4]) == 1) | s->ydata[4] == 0) & ( (is_ascii_num(s->ydata[5]) == 1) | s->ydata[5] == 0) ){
+		s->format = 1;//Correct format
+	}else if( (is_ascii_num(s->ydata[0]) == 1) & (is_ascii_num(s->ydata[1]) == 1 |  (s->ydata[1] == 0)) & (s->ydata[2] == 0) & (s->ydata[3] == 0) & (s->ydata[4] == 0) & (s->ydata[5] == 0)){
+		tmp = s->ydata[0];
+		s->ydata[0] = (s->ydata[1] == 0) ?'0':s->ydata[0];
+		s->ydata[1] = (s->ydata[1] == 0) ?tmp:s->ydata[1];
+		s->ydata[2] = '.';
+		s->ydata[3] = '0';
+		s->ydata[4] = '0';
+		s->ydata[5] = '0';
+		s->format = 1;//Correct format
+	}else if((s->ydata[0] == 0) & (s->ydata[1] == 0) & (s->ydata[2] == 0) & (s->ydata[3] == 0) & (s->ydata[4] == 0) & (s->ydata[5] == 0)){
+		s->ymessage = "SAME"; //if input wasn't specified, then it is to stay the same
+		s->format = 1;//Correct format
+	}else{
+		s->exit_message = "Y coordinate is not in the correct format, please input coordinates as XX.xxx \r\nWhere XX is the integer portion and xxx is the decimal portion.\r\nNote the precision is limited to 1 MIL and extra decimals will be truncated.";
+	}
+	//z variable check	
+	if((s->zdata[0] == '.') & (is_ascii_num(s->zdata[1]) == 1) & (is_ascii_num(s->zdata[2]) == 1 | s->zdata[2] == 0) & (is_ascii_num(s->zdata[3]) == 1 | s->zdata[3] == 0) & ((is_ascii_num(s->zdata[4]) == 1) | s->zdata[4] == 0) & ((is_ascii_num(s->zdata[5]) == 1) | s->zdata[5] == 0) ){
+		s->zdata[5] = (s->zdata[3] == 0) ?'0':s->zdata[3];
+		s->zdata[4] = (s->zdata[2] == 0) ?'0':s->zdata[2];
+		s->zdata[3] = (s->zdata[1] == 0) ?'0':s->zdata[1];
+		s->zdata[2] = '.';
+		s->zdata[1] = '0';
+		s->zdata[0] = '0';
+		s->format = 1;//Correct format
+	}else if( (is_ascii_num(s->zdata[0]) == 1) & (s->zdata[1] == '.') & (is_ascii_num(s->zdata[2]) == 1) & ((is_ascii_num(s->zdata[3]) == 1) | s->zdata[3] == 0) & ((is_ascii_num(s->zdata[4]) == 1) | s->zdata[4] == 0) & ((is_ascii_num(s->zdata[5]) == 1) | s->zdata[5] == 0) ){
+		s->zdata[5] = (s->zdata[4] == 0) ?'0':s->zdata[4];
+		s->zdata[4] = (s->zdata[3] == 0) ?'0':s->zdata[3];
+		s->zdata[3] = (s->zdata[2] == 0) ?'0':s->zdata[2];
+		s->zdata[2] = '.';
+		s->zdata[1] = s->zdata[0];
+		s->zdata[0] = '0';
+		s->format = 1;//Correct format
+	}else if( (is_ascii_num(s->zdata[0]) == 1) & (is_ascii_num(s->zdata[1]) == 1) & (s->zdata[2] == '.') & ( (is_ascii_num(s->zdata[3]) == 1) | s->zdata[3] == 0) & ( (is_ascii_num(s->zdata[4]) == 1) | s->zdata[4] == 0) & ( (is_ascii_num(s->zdata[5]) == 1) | s->zdata[5] == 0) ){
+		s->format = 1;//Correct format
+	}else if( (is_ascii_num(s->zdata[0]) == 1) & (is_ascii_num(s->zdata[1]) == 1 |  (s->zdata[1] == 0)) & (s->zdata[2] == 0) & (s->zdata[3] == 0) & (s->zdata[4] == 0) & (s->zdata[5] == 0)){
+		tmp = s->zdata[0];
+		s->zdata[0] = (s->zdata[1] == 0) ?'0':s->zdata[0];
+		s->zdata[1] = (s->zdata[1] == 0) ?tmp:s->zdata[1];
+		s->zdata[2] = '.';
+		s->zdata[3] = '0';
+		s->zdata[4] = '0';
+		s->zdata[5] = '0';
+		s->format = 1;//Correct format
+	}else if((s->zdata[0] == 0) & (s->zdata[1] == 0) & (s->zdata[2] == 0) & (s->zdata[3] == 0) & (s->zdata[4] == 0) & (s->zdata[5] == 0)){
+		s->zmessage = "SAME"; //if input wasn't specified, then it is to stay the same
+		s->format = 1;//Correct format
+	}else{
+		s->exit_message = "Z coordinate is not in the correct format, please input coordinates as XX.xxx \r\nWhere XX is the integer portion and xxx is the decimal portion.\r\nNote the precision is limited to 1 MIL and extra decimals will be truncated.";
+	}
+	
+
 }
+
+
+
+void verify_coords(var_check_T* s){
 	
+	//This function verifies that the input coordinates are within the bounds of the mechanical dimensions of the machine
+	//If they are it converts them to ints in units of mils then updates the global coordinate variables
+	int x,y,z,f;
+	f=0;
+	int movement_data[4];
+	if((strcmp(s->xmessage, "SAME") == 0)){  //If x coordinate was received as an input
+		x = MOTOR1_X.current_position;
+	}else{ //if input wasn't specified, then it is to stay the same
+		x = convert_coord(s->xdata);
+		if( ( x > MOTOR1_X.limit ) | ( x < 0 ) ){
+			s->exit_message = "X coordinate exceeds the limits of the machine.\r\nTry again tiger.\r\n";
+			s->format = 0;
+		}
+	}
 	
-	//
-	////If y coordinate is in the triple digits
-	//if((is_ascii_num(s->ydata[0]) == 1) & (is_ascii_num(s->ydata[1]) == 1) & (is_ascii_num(s->ydata[2]) == 1)){
-		//s->format = 0;// incorrect format
-		//s->exit_message = "Y coordinate is not in the correct format, please input coordinates as XX.xxx \r\nWhere XX is the integer portion and xxx is the decimal portion.\r\nNote the precision is limited to 1 MIL and extra decimals will be truncated.";
-	//}
-		//
-	////If z coordinate is in the triple digits
-	//if((is_ascii_num(s->zdata[0]) == 1) & (is_ascii_num(s->zdata[1]) == 1) & (is_ascii_num(s->zdata[2]) == 1)){
-		//s->format = 0;// incorrect format
-		//s->exit_message = "Z coordinate is not in the correct format, please input coordinates as XX.xxx \r\nWhere XX is the integer portion and xxx is the decimal portion.\r\nNote the precision is limited to 1 MIL and extra decimals will be truncated.";
-	//}
+		
+	if((strcmp(s->ymessage, "SAME") == 0)){ //if input wasn't specified, then it is to stay the same
+		y = MOTOR2_Y.current_position;
+	}else{
+		y = convert_coord(s->ydata);
+		if( ( y > MOTOR2_Y.limit ) | ( y < 0 ) ){
+			s->exit_message = "Y coordinate exceeds the limits of the machine.\r\nTry again tiger.\r\n";
+			s->format = 0;
+		}
+	}
+		
+		
+	if((strcmp(s->zmessage, "SAME") == 0)){ //if input wasn't specified, then it is to stay the same
+		z = MOTOR3_Z.current_position;
+	}else {
+		z  = convert_coord(s->zdata);
+		if( ( z > MOTOR3_Z.limit ) | ( z < 0 ) ){
+			s->exit_message = "Z coordinate exceeds the limits of the machine.\r\nTry again tiger.\r\n";
+			s->format = 0;
+		}
+	}
 	
+	//take care of feedrate here
 	
-	
+	s->final_data[0] = x;
+	s->final_data[1] = y;
+	s->final_data[2] = z;
+	s->final_data[3] = f;
 	
 }
 
+int convert_coord(char s[]){
+	//Convert from proprietary input ascii string I parsed into a integer in MILS
+	//this assumes input is in XX.xxx format
+	
 
+	int tmp = 0;
+	int out = 0;
+	int i = 0;
+	char x;
+	
+	int scale[6] = {10000, 1000, 0, 100, 10, 1};
+	for(i=0; i<6; i++){
+		if(i != 2){ //skip the decimal point
+		x = s[i];
+		tmp = atoi(&x);
+		out += tmp*scale[i];
+		}
+	}
 
+	return out;
+	
+}
 
 
 int is_ascii_num(char var){

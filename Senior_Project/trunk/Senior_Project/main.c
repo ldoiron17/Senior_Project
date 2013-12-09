@@ -12,15 +12,17 @@
 #include "Init.h"
 #include "Motor.h"
 #include "ISR.h"
+#include "Gcodes.h"
 #include "defines.h"
 
 //uint8_t  EEMEM NonChar="a";
-uint16_t EEMEM NonInt=16;
-uint8_t  EEMEM NonString[10]="This is 10";
+//uint16_t EEMEM NonInt=16;
+//uint8_t  EEMEM NonString[10]="This is 10";
 
-# define F_CPU 8000000UL //8MHz clock speed, used for _delay_ms()
+#define F_CPU 8000000UL //8MHz clock speed, used for _delay_ms()
 
-	
+volatile signed int chucktesta;
+
 int main(void)
 {
 	
@@ -64,8 +66,11 @@ int main(void)
 	
 	while(1){
 		
+		
+		
 		//USART_Transmit('a');
 		Receive_Gcode();
+		//Receive_Coords();
 		//char tmp;
 		//tmp = USART_Receive();
 		
