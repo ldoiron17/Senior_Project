@@ -2,7 +2,6 @@
 
 
 #include <avr/io.h>
-#include <util/delay.h>
 #include <avr/interrupt.h>
 #include <stdio.h>
 #include <avr/eeprom.h>
@@ -29,23 +28,29 @@ void G00(int x, int y, int feedrate){
 	uint16_t i;
 	uint16_t error;
 	
+	MOTOR1_X.wait = 1;
+	
 	if (dx > dy){
 		for(i=0; i < dx; i++){
+			while(MOTOR1_X.wait == 1){}
 			stepx(dirx, FULLSTEP);
 			error+=dy;
 			if(error>=dx){
 				error-=dx;
 				stepy(diry, FULLSTEP);
 			}//end if
+			MOTOR1_X.wait = 1;
 		}//end for
 	}else{
 		for(i=0; i < dx; i++){
+			while(MOTOR1_X.wait == 1){}
 			stepy(diry, FULLSTEP);
 			error+=dx;
 			if(error>=dy){
 				error-=dy;
 				stepx(dirx, FULLSTEP);
 			}//end if
+			MOTOR1_X.wait = 1;
 		}//end for
 	}//end else
 	

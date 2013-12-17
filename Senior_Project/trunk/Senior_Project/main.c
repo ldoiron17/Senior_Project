@@ -1,6 +1,7 @@
 
 
 
+#define F_CPU 8000000UL //8MHz clock speed, used for _delay_ms()
 
 #include <avr/io.h>
 #include <util/delay.h>
@@ -19,7 +20,7 @@
 //uint16_t EEMEM NonInt=16;
 //uint8_t  EEMEM NonString[10]="This is 10";
 
-#define F_CPU 8000000UL //8MHz clock speed, used for _delay_ms()
+
 
 volatile signed int chucktesta;
 
@@ -62,12 +63,22 @@ int main(void)
 		
 	//motor_dir = NEGATIVE;	
 	
-	_delay_ms(50);
+	//_delay_ms(50);
+	//stepx(POSITIVE, FULLSTEP);
+	
+	
+	
+	//G00(-1000, 1000, 1);
+	//Motor_Disable();
 	
 	while(1){
 		
 		
-		
+		//stepx(POSITIVE, FULLSTEP);
+		//_delay_ms(50);
+		//stepy()
+		//G00(1000, 1000, 1);
+		//G00(0, 0, 1);
 		//USART_Transmit('a');
 		Receive_Gcode();
 		//Receive_Coords();

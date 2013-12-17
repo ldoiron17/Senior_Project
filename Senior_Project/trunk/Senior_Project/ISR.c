@@ -1,7 +1,6 @@
 //ISR.c
 
 #include <avr/io.h>
-#include <util/delay.h>
 #include <avr/interrupt.h>
 #include <stdio.h>
 #include <avr/eeprom.h>
@@ -17,19 +16,27 @@ ISR(TIMER1_COMPA_vect) //interrupt service routine for timer1 compare A flag
 	
 
 	if(MOTOR1_X.enabled == YES){
-		
+		MOTOR1_X.wait = 0;
 		//accelerate speed every full step, this is a test
-		if(OCR1A > 140){
-			OCR1A -= 1;
-		}
+		//if(OCR1A > 140){
+		//	OCR1A -= 1;
+		//}
 		
 		if(MOTOR1_X.step_size == FULLSTEP){
-			if(MOTOR1_X.dir == POSITIVE){
-				
-				
+
 				switch(MOTOR1_X.current_state){
 					
 					case STATE0:
+						PWM1A = ON;
+						PWM1B = OFF;
+						PWM1A_on();
+						PWM1B_off();
+						PWM2A = OFF;
+						PWM2B = ON;
+						PWM2A_off();
+						PWM2B_on();
+						break;
+					case STATE1:
 						PWM1A = ON;
 						PWM1B = OFF;
 						PWM1A_on();
@@ -39,29 +46,30 @@ ISR(TIMER1_COMPA_vect) //interrupt service routine for timer1 compare A flag
 						PWM2A_on();
 						PWM2B_off();
 						break;
-					case STATE1:
-						PWM2A = OFF;
-						PWM2B = ON;
-						PWM2A_off();
-						PWM2B_on();
-						break;
 					case STATE2:
 						PWM1A = OFF;
 						PWM1B = ON;
 						PWM1A_off();
 						PWM1B_on();
-						break;
-					case STATE3:
 						PWM2A = ON;
 						PWM2B = OFF;
 						PWM2A_on();
 						PWM2B_off();
 						break;
+					case STATE3:
+						PWM1A = OFF;
+						PWM1B = ON;
+						PWM1A_off();
+						PWM1B_on();
+						PWM2A = OFF;
+						PWM2B = ON;
+						PWM2A_off();
+						PWM2B_on();
+						break;
 					default:
 						MOTOR1_X.enabled = NO;
-						MOTOR1_X.current_state = STATE0;
+						//MOTOR1_X.current_state = STATE0;
 						break;
-				}
 					
 				}
 				//// Full step code
@@ -347,7 +355,7 @@ ISR(TIMER2_COMP_vect) //interrupt service routine for timer1 compare B flag
 ISR(ADC_vect) 
 	{
 		
-
+	led2_toggle();
 		
 		//LED1_on();
 		ADCval4 = ADCval3;
@@ -358,6 +366,7 @@ ISR(ADC_vect)
 		
 		//ADC_avg = (3*ADCval)/4 + ADCval1/4;
 		ADC_avg = ADC;
+		int cur_limit = 300;
 		
 		if(MOTOR1_X.enabled == YES){
 			if(ADMUX == 0b11000010){
@@ -377,7 +386,7 @@ ISR(ADC_vect)
 							
 						}
 				}*/
-				if (ADC_avg >=200){
+				if (ADC_avg >=cur_limit){
 					state1 = NEG_CUR;
 					PWM1A_off();
 					PWM1B_off();
@@ -420,7 +429,7 @@ ISR(ADC_vect)
 						PWM2B_off();
 					}
 				}*/
-				if (ADC_avg >=200){
+				if (ADC_avg >=cur_limit){
 					state2 = NEG_CUR;
 					PWM2A_off();
 					PWM2B_off();

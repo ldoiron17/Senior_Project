@@ -1,5 +1,4 @@
 #include <avr/io.h>
-#include <util/delay.h>
 #include <avr/interrupt.h>
 #include <stdio.h>
 #include <avr/eeprom.h>
@@ -191,19 +190,19 @@ void Receive_Coords( void ){
 
 void Receive_Gcode( void ){
 	
-	//Example G01:
-	//G01 X1Y1Z1F5
+	//Example G00:
+	//G00 X1Y1Z1F5
 		
 	char *tmp;
 	
 	var_check_T *s = (var_check_T *) calloc(1,sizeof(var_check_T));
-	s->exit_message = "WHAT THE HELL IS YOUR PROBLEM?!";
+	s->exit_message = "WHAT THE HELL IS YOUR PROBLEM?!"; //what is this for??
 	s->format = 0;
 	
 	
 	//Ask for Gcode Command
-	USART_putstring(Gcode_request);
-	USART_putstring(newline);
+	USART_putstring("Enter Command:\r\n");
+	//USART_putstring(newline);
 
 	
 	int i;
@@ -254,6 +253,12 @@ void Receive_Gcode( void ){
 			}
 		}
 		
+	}else if( strcmp(&Gcode_buffer, "ONN") == 0){  //If input is G01 command}else{
+		Motor_Enable();
+		USART_putstring(newline);
+	}else if( strcmp(&Gcode_buffer, "OFF") == 0){  //If input is G01 command}else{
+		Motor_Disable();
+		USART_putstring(newline);
 	}else{
 		USART_putstring(newline);
 		USART_putstring(ding);
@@ -286,19 +291,22 @@ void scan_var(var_check_T* s){
 	
 	
 	int i;
-	uint8_t buf;
+	char buf;
 	s->format = 1;
 	s->exit_message = "";
 	s->xmessage = "";
 	s->ymessage = "";
 	s->zmessage = "";
 	s->fmessage = "";
-	s->current_input = '0';
+	s->current_input = "";
 	s->xdata[7] = "";
 	s->ydata[7] ="";
 	s->zdata[7] = "";
 	s->feedrate[7] = "";
-		
+	s->xdone = 0;	
+	s->ydone = 0;	
+	s->zdone = 0;	
+	s->fdone = 0;	
 
 	while(1){
 		
@@ -313,80 +321,118 @@ void scan_var(var_check_T* s){
 			s->exit_message = "NOPE\r\n~Chuck Testa~";  //me so funny
 		}
 		
-		else if(buf == ' '){
+		else if((buf == ' ') & ( strcmp(s->current_input, "") == 0) ){
 			USART_Transmit(buf); //Ignore blank spaces
 		}
 		
 		else{
 			USART_Transmit(buf);
-			if(buf == 'X' | buf == 'x'){
-				s->current_input = 'x';
-				i = 0;
+			if( (buf == 'X') | (buf == 'x')){
+				if( s->xdone == 1 ){
+					s->exit_message = "You can't enter two values for X.";
+				}else{
+					s->current_input = "x";
+					i = 0;
+				}
 			}else if(buf == 'Y' | buf == 'y'){
-				s->current_input = 'y';
-				i = 0;
+				s->xdone = 1;
+				if( s->ydone == 1 ){
+					s->exit_message = "You can't enter two values for Y.";
+				}else{
+					s->current_input = "y";
+					i = 0;
+				}
 			} else if(buf == 'Z' | buf == 'z'){
-				s->current_input = 'z';
-				i = 0;
+				s->xdone = 1;
+				s->ydone = 1;
+				if( s->zdone == 1 ){
+					s->exit_message = "You can't enter two values for Z.";
+				}else{
+					s->current_input = "z";
+					i = 0;
+				}
 			} else if(buf == 'F' | buf == 'f'){
-				s->current_input = 'f';
-				i = 0;
+				s->xdone = 1;
+				s->ydone = 1;
+				s->zdone = 1;
+				if( s->fdone == 1 ){
+					s->exit_message = "You can't enter two values for F.";
+				}else{
+					s->current_input = "f";
+					i = 0;
+				}
 			}else{
-				if(s->current_input == 'x'){
+				if(strcmp((s->current_input), "x") == 0){
 					if((is_ascii_num(buf) == 1) | (buf == '.')){
 						if(i == 6){
-							s->current_input = '0';
+							s->current_input = "";
+							s->xdone = 1;
 						}else{
 							s->xdata[i] = buf;
 							i++;
 						}
+					}else if(buf == ' '){
+						s->current_input = "";
+						s->xdone = 1;
 					}else{
 						s->exit_message = "Incorrect format for X coordinate";
 					}
-				}else if(s->current_input == 'y'){
+				}else if(strcmp((s->current_input), "y") == 0){
 					if((is_ascii_num(buf) == 1) | (buf == '.')){
 						if(i == 6){
-							s->current_input = '0';
+							s->current_input = "";
+							s->ydone = 1;
 						}else{
 							s->ydata[i] = buf;
 							i++;
 						}
-						
+					}else if(buf == ' '){
+						s->current_input = "";
+						s->ydone = 1;	
 					}else{
 						s->exit_message = "Incorrect format for Y coordinate";
 					}
-				}else if(s->current_input == 'z'){
+				}else if(strcmp((s->current_input), "z") == 0){
 					if((is_ascii_num(buf) == 1) | (buf == '.')){
 						if(i == 6){
-							s->current_input = '0';
+							s->current_input = "";
+							s->zdone = 1;
 						}else{
 							s->zdata[i] = buf;
 							i++;
 						}
-						
+					}else if(buf == ' '){
+						s->current_input = "";
+						s->zdone = 1;
 					}else{
 						s->exit_message = "Incorrect format for Z coordinate";
 					}				
-				}else if(s->current_input == 'f'){
-				if((is_ascii_num(buf) == 1) | (buf == '.')){
-					if(i == 6){
-						s->current_input = '0';
-					}else{
-						s->feedrate[i] = buf;
-						i++;
-					}
-					
+				}else if(strcmp((s->current_input), "f") == 0){
+					if((is_ascii_num(buf) == 1) | (buf == '.')){
+						if(i == 6){
+							s->current_input = "";
+							s->fdone = 1;
+						}else{
+							s->feedrate[i] = buf;
+							i++;
+						}
+					}else if(buf == ' '){
+						s->current_input = "";
+						s->fdone = 1;
 					}else{
 						s->exit_message = "Incorrect feedrate format";
 					}
 				}else{
-					//do something?
+					if( (strcmp((s->current_input), "x") != 0) & (strcmp((s->current_input), "y") != 0) & (strcmp((s->current_input), "z") != 0) & (strcmp((s->current_input), "f") != 0) & (buf != ' ') ){
+						s->exit_message = "Incorrect input format.";
+					}
 					}
 				}
 
 			}
 			
-			if( s->exit_message != ""){
+			
+			if(strcmp((s->exit_message), "") != 0 ){ //if the exit message isn't null, then quit and throw an error
 				s->format = 0;
 				break;
 			}
@@ -414,7 +460,7 @@ void check_format(var_check_T* s){
 		s->xdata[1] = '0';
 		s->xdata[0] = '0';
 		s->format = 1;//Correct format		
-	}else if( (is_ascii_num(s->xdata[0]) == 1) & (s->xdata[1] == '.') & (is_ascii_num(s->xdata[2]) == 1) & ((is_ascii_num(s->xdata[3]) == 1) | s->xdata[3] == 0) & ((is_ascii_num(s->xdata[4]) == 1) | s->xdata[4] == 0) & ((is_ascii_num(s->xdata[5]) == 1) | s->xdata[5] == 0) ){
+	}else if( (is_ascii_num(s->xdata[0]) == 1) & (s->xdata[1] == '.') & ((is_ascii_num(s->xdata[2]) == 1) | s->xdata[2] == 0) & ((is_ascii_num(s->xdata[3]) == 1) | s->xdata[3] == 0) & ((is_ascii_num(s->xdata[4]) == 1) | s->xdata[4] == 0) & ((is_ascii_num(s->xdata[5]) == 1) | s->xdata[5] == 0) ){
 		s->xdata[5] = (s->xdata[4] == 0) ?'0':s->xdata[4];
 		s->xdata[4] = (s->xdata[3] == 0) ?'0':s->xdata[3];
 		s->xdata[3] = (s->xdata[2] == 0) ?'0':s->xdata[2];
@@ -448,7 +494,7 @@ void check_format(var_check_T* s){
 		s->ydata[1] = '0';
 		s->ydata[0] = '0';
 		s->format = 1;//Correct format
-	}else if( (is_ascii_num(s->ydata[0]) == 1) & (s->ydata[1] == '.') & (is_ascii_num(s->ydata[2]) == 1) & ((is_ascii_num(s->ydata[3]) == 1) | s->ydata[3] == 0) & ((is_ascii_num(s->ydata[4]) == 1) | s->ydata[4] == 0) & ((is_ascii_num(s->ydata[5]) == 1) | s->ydata[5] == 0) ){
+	}else if( (is_ascii_num(s->ydata[0]) == 1) & (s->ydata[1] == '.') & ((is_ascii_num(s->ydata[2]) == 1) | s->ydata[2] == 0) & ((is_ascii_num(s->ydata[3]) == 1) | s->ydata[3] == 0) & ((is_ascii_num(s->ydata[4]) == 1) | s->ydata[4] == 0) & ((is_ascii_num(s->ydata[5]) == 1) | s->ydata[5] == 0) ){
 		s->ydata[5] = (s->ydata[4] == 0) ?'0':s->ydata[4];
 		s->ydata[4] = (s->ydata[3] == 0) ?'0':s->ydata[3];
 		s->ydata[3] = (s->ydata[2] == 0) ?'0':s->ydata[2];
@@ -482,7 +528,7 @@ void check_format(var_check_T* s){
 		s->zdata[1] = '0';
 		s->zdata[0] = '0';
 		s->format = 1;//Correct format
-	}else if( (is_ascii_num(s->zdata[0]) == 1) & (s->zdata[1] == '.') & (is_ascii_num(s->zdata[2]) == 1) & ((is_ascii_num(s->zdata[3]) == 1) | s->zdata[3] == 0) & ((is_ascii_num(s->zdata[4]) == 1) | s->zdata[4] == 0) & ((is_ascii_num(s->zdata[5]) == 1) | s->zdata[5] == 0) ){
+	}else if( (is_ascii_num(s->zdata[0]) == 1) & (s->zdata[1] == '.') & ((is_ascii_num(s->zdata[2]) == 1) | s->zdata[2] == 0) & ((is_ascii_num(s->zdata[3]) == 1) | s->zdata[3] == 0) & ((is_ascii_num(s->zdata[4]) == 1) | s->zdata[4] == 0) & ((is_ascii_num(s->zdata[5]) == 1) | s->zdata[5] == 0) ){
 		s->zdata[5] = (s->zdata[4] == 0) ?'0':s->zdata[4];
 		s->zdata[4] = (s->zdata[3] == 0) ?'0':s->zdata[3];
 		s->zdata[3] = (s->zdata[2] == 0) ?'0':s->zdata[2];

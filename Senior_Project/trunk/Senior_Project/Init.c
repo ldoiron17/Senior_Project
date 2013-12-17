@@ -1,7 +1,6 @@
 
 
 #include <avr/io.h>
-#include <util/delay.h>
 #include <avr/interrupt.h>
 #include <stdio.h>
 #include <avr/eeprom.h>
@@ -27,9 +26,8 @@ void Init_PWM(void){
 	TCCR1A = (0 << WGM11) | (0 << WGM10);// | (1 << COM1A0) | (1 << COM1B0);
 	TCCR1B = (0 << WGM13) | (1 << WGM12) | (0 << CS02) |(1 << CS01) | (1 << CS00); //clk_IO = clk/64 (prescalar)
 	
-	TCCR2 = (1 << WGM21) | (1 << CS21); //set timer 2 clk to be clk/8
-	OCR2 = 200;
-	
+	TCCR2 = (1 << WGM21) | (1 << CS21) | (1 << CS20); //set timer 2 clk to be clk/64
+	OCR2 = 50; //used to control fixed off time of current control this number is 1/(clk/64)*OCR2 seconds
 	//Note OCR1B must be LESS THAN OCR1A
 	OCR1A = 300;  //set PWM frequency  1/(OCR1A*clk_period*prescaler)
 	//OCR1B = 300;   //set current hysteresis off time

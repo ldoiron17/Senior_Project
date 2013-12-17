@@ -67,12 +67,12 @@ struct MOTOR_T{
 	int enabled;
 	int step_size;
 	int current_state;
-	int limit;
+	int limit, wait;
 };
 
-extern struct MOTOR_T MOTOR1_X;
-extern struct MOTOR_T MOTOR2_Y;
-extern struct MOTOR_T MOTOR3_Z;
+extern volatile struct MOTOR_T MOTOR1_X;
+extern volatile struct MOTOR_T MOTOR2_Y;
+extern volatile struct MOTOR_T MOTOR3_Z;
 
 
 //Define constants
@@ -118,6 +118,7 @@ extern struct MOTOR_T MOTOR3_Z;
 //LED functions for turning on and off status LED 2
 #define LED2_on()  PORTD |= _BV(4)
 #define LED2_off()  PORTD &= ~_BV(4)
+#define led2_toggle() PORTD ^= _BV(4)
 
 //Motor Driver Chip functions to control voltage outputs for H-Bridge 1
 #define PWM1A_on()  PORTA |= _BV(2)

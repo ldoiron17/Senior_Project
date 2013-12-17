@@ -1,8 +1,8 @@
 
 //Prototype functions
 typedef struct {
-	int format;
-	char current_input;
+	int format, xdone, ydone, zdone, fdone;
+	char *current_input;
 	char xdata[7];
 	char ydata[7];
 	char zdata[7];
