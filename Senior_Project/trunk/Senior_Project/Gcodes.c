@@ -17,7 +17,7 @@ void G00(int x, int y, int feedrate){
 	
 	//need to implement feedrate control still!
 	//set_feedrate(feedrate); 
-	
+	Motor_Enable();
 	int dx = x - MOTOR1_X.current_position;
 	int dy = y - MOTOR2_Y.current_position;
 	int dirx=dx>0?POSITIVE:NEGATIVE;
@@ -56,5 +56,6 @@ void G00(int x, int y, int feedrate){
 	
 	MOTOR1_X.current_position = x;
 	MOTOR2_Y.current_position = y;
+	Motor_Disable();
 	
 };

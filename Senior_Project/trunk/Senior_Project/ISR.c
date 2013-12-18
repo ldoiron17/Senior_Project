@@ -18,7 +18,7 @@ ISR(TIMER1_COMPA_vect) //interrupt service routine for timer1 compare A flag
 	if(MOTOR1_X.enabled == YES){
 		MOTOR1_X.wait = 0;
 		//accelerate speed every full step, this is a test
-		if(OCR1A > 140){
+		if(OCR1A > 110){
 			OCR1A -= 1;
 		}
 		

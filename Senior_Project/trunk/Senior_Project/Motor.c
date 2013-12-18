@@ -38,6 +38,7 @@ void Motor_Disable (void){
 		PWM3B_off();
 		MOTOR1_X.enabled = NO;
 		MOTOR2_Y.enabled = NO;
+		OCR1A = 300;
 		
 		//_delay_ms(500); //delay 0.5 second before allowing anything else to happen
 	

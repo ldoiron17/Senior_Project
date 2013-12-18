@@ -27,7 +27,7 @@ void Init_PWM(void){
 	TCCR1B = (0 << WGM13) | (1 << WGM12) | (0 << CS02) |(1 << CS01) | (1 << CS00); //clk_IO = clk/64 (prescalar)
 	
 	TCCR2 = (1 << WGM21) | (1 << CS21) | (1 << CS20); //set timer 2 clk to be clk/64
-	OCR2 = 50; //used to control fixed off time of current control this number is 1/(clk/64)*OCR2 seconds
+	OCR2 = 15; //used to control fixed off time of current control this number is 1/(clk/64)*OCR2 seconds
 	//Note OCR1B must be LESS THAN OCR1A
 	OCR1A = 300;  //set PWM frequency  1/(OCR1A*clk_period*prescaler)
 	//OCR1B = 300;   //set current hysteresis off time
